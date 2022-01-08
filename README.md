@@ -8,7 +8,7 @@ This uses a [Raspberry Pi Pico](https://www.raspberrypi.com/products/raspberry-p
 This project is built using the Raspberry Pi SDK found at https://github.com/raspberrypi/pico-sdk. This must be downloaded separately, it is not included. All other requirements should be fulfilled by setting up the Pico SDK.
 
 # Compilation instructions
-First, you need to set the path to the Raspberry Pi Pico c sdk with
+First, you need to set the path to the Raspberry Pi Pico c sdk with:
 `export PATH_TO_SDK=<Path to the sdk>`
 
 Then, run the following:

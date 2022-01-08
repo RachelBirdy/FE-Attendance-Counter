@@ -2,7 +2,7 @@
 The software to make and run the custom Furnal Equinox event attendance counters. 
 
 # Hardware
-This uses a <url="https://www.raspberrypi.com/products/raspberry-pi-pico/">Raspberry Pi Pico<\url>, with a Waveshare 2.23" OLED screen
+This uses a [Raspberry Pi Pico](https://www.raspberrypi.com/products/raspberry-pi-pico/), with a Waveshare 2.23" OLED screen
 
 # Requirements
 This project is built using the Raspberry Pi SDK found at `https://github.com/raspberrypi/pico-sdk`. This must be downloaded separately, it is not included.

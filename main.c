@@ -29,7 +29,7 @@ int currentCap = 0;
 int currentRejected = 0;
 
 // Debouncing delay time, in milliseconds
-const int delayTime = 100;
+const int delayTime = 50;
 
 // Misc values
 unsigned long timePressed;
@@ -57,6 +57,7 @@ void gpio_callback(uint gpio, uint32_t events) {
                 currentRejected++;
                 break;
         }
+        rewriteNumbers(canvas, currentCap, currentRejected);
     } else if (events == GPIO_IRQ_EDGE_RISE) {
         timePressed = to_ms_since_boot(get_absolute_time());
     }

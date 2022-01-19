@@ -164,50 +164,67 @@ void paintBack() {
     Paint_BmpWindows(0, 18, &helixBottom[0], 16, 13);
 }
 
+void drawAnimation(UBYTE *canvas) {
+    switch (currentRotation) {
+        case 0:
+            paintFront();
+            break;
+        case 1:
+            paintHalfFront();
+            break;
+        case 2:
+            paintSide();
+            break;
+        case 3:
+            paintHalfBack();
+            break;
+        case 4:
+            paintBack();
+            break;
+        case 5:
+            paintHalfBack();
+            break;
+        case 6:
+            paintSide();
+            break;
+        case 7:
+            paintHalfFront();
+            break;
+    }
+}
+
 void updateScreen(UBYTE *canvas, int currentCap, int currentRejected) {
     char capString[10];
     char rejString[10];
     itoa(currentCap, capString, 10);
     itoa(currentRejected, rejString, 10);
     Paint_Clear(BLACK);
-    switch (currentRotation) {
-        case 0:
-            paintFront();
-            currentRotation++;
-            break;
-        case 1:
-            paintHalfFront();
-            currentRotation++;
-            break;
-        case 2:
-            paintSide();
-            currentRotation++;
-            break;
-        case 3:
-            paintHalfBack();
-            currentRotation++;
-            break;
-        case 4:
-            paintBack();
-            currentRotation++;
-            break;
-        case 5:
-            paintHalfBack();
-            currentRotation++;
-            break;
-        case 6:
-            paintSide();
-            currentRotation++;
-            break;
-        case 7:
-            paintHalfFront();
-            currentRotation = 0;
-            break;
-    }
+
+    (currentRotation == 7) ? currentRotation = 0 : currentRotation++;
+    drawAnimation(canvas);
+
     Paint_DrawString_EN(16, 6, TOP_LINE, &Font8, WHITE, BLACK);
     Paint_DrawString_EN(41, 22, BOTTOM_LINE, &Font8, WHITE, BLACK);
     Paint_DrawString_EN(87, 4, capString, &Font12, WHITE, BLACK);
     Paint_DrawString_EN(87, 20, rejString, &Font12, WHITE, BLACK);
     OLED_2in23_draw_bitmap(0,0,&canvas[0],128,32);
     return;
+}
+
+void rewriteNumbers(UBYTE *canvas, int currentCap, int currentRejected) {
+char capString[10];
+    char rejString[10];
+    itoa(currentCap, capString, 10);
+    itoa(currentRejected, rejString, 10);
+    Paint_Clear(BLACK);
+
+    drawAnimation(canvas);
+
+    Paint_DrawString_EN(16, 6, TOP_LINE, &Font8, WHITE, BLACK);
+    Paint_DrawString_EN(41, 22, BOTTOM_LINE, &Font8, WHITE, BLACK);
+    Paint_DrawString_EN(87, 4, capString, &Font12, WHITE, BLACK);
+    Paint_DrawString_EN(87, 20, rejString, &Font12, WHITE, BLACK);
+    OLED_2in23_draw_bitmap(0,0,&canvas[0],128,32);
+    return;
+
 }

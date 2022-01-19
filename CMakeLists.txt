@@ -27,7 +27,10 @@ add_subdirectory(lib/GUI)
 add_subdirectory(lib/ScreenUpdater)
 
 add_executable(main main.c)
+add_executable(wipe_flash wipe_flash.c)
 
 pico_add_extra_outputs(main)
+pico_add_extra_outputs(wipe_flash)
 
-target_link_libraries(main OLED pico_stdlib hardware_spi GUI Fonts ScreenUpdate hardware_gpio)
+target_link_libraries(main OLED pico_stdlib hardware_spi GUI Fonts ScreenUpdate hardware_gpio m)
+target_link_libraries(wipe_flash OLED pico_stdlib hardware_spi GUI Fonts hardware_flash hardware_sync)

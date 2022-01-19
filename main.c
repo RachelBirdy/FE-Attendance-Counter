@@ -4,8 +4,17 @@
 #include <strings.h>
 #include <stdlib.h>
 #include "update_screen.h"
+#include "hardware/gpio.h"
 
 UBYTE *canvas;
+
+// Do your buttons have pull up/down resistors?
+const bool PULL_UP_PRESENT = true;
+
+// The gpio pins your buttons are connected to
+const int INCREASE_PIN = 1;
+const int DECREASE_PIN = 2;
+const int REJECT_PIN = 0;
 
 // How many milliseconds to wait between screen updates.
 const int ANIMATION_DELAY = -250;
@@ -28,6 +37,22 @@ bool screenCallback(struct repeating_timer *t) {
     return true;
 }
 
+void gpio_callback(uint gpio, uint32_t events) {
+    switch(gpio) {
+        case INCREASE_PIN:
+            currentCap++;
+            break;
+        case DECREASE_PIN:
+            currentCap--;
+            break;
+        case REJECT_PIN:
+            currentRejected++;
+            break;
+    }
+    return;
+}
+
+
 /*
  * Main funciton to execute when the microcontroller receives power
  */
@@ -46,6 +71,17 @@ int main() {
     // Set up the display update callback
     struct repeating_timer timer;
     add_repeating_timer_ms(ANIMATION_DELAY, screenCallback, NULL, &timer);
+
+    // Set up the gpio interupts
+    if (PULL_UP_PRESENT) {
+        gpio_disable_pulls(0);
+        gpio_disable_pulls(1);
+        gpio_disable_pulls(2);
+    }
+    gpio_set_irq_enabled_with_callback(0, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(1, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(2, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+
     while(true); // ATTENDANCE COUNTING IS ETERNAL.
     return 0;
 }

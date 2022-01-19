@@ -30,4 +30,4 @@ add_executable(main main.c)
 
 pico_add_extra_outputs(main)
 
-target_link_libraries(main OLED pico_stdlib hardware_spi GUI Fonts ScreenUpdate)
+target_link_libraries(main OLED pico_stdlib hardware_spi GUI Fonts ScreenUpdate hardware_gpio)

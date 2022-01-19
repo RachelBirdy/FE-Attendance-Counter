@@ -25,8 +25,15 @@ const int CURRENT_CAP = 0;
 
 // Test values. Do change them. Or delete them eventually.
 // (Not the variables themselves, we need those. Just the numbers.)
-int currentCap = 100;
-int currentRejected = 25;
+int currentCap = 0;
+int currentRejected = 0;
+
+// Debouncing delay time, in milliseconds
+const int delayTime = 100;
+
+// Misc values
+unsigned long timePressed;
+
 
 /**
  * This is the callback funciton to update the display periodically
@@ -38,20 +45,28 @@ bool screenCallback(struct repeating_timer *t) {
 }
 
 void gpio_callback(uint gpio, uint32_t events) {
-    switch(gpio) {
-        case INCREASE_PIN:
-            currentCap++;
-            break;
-        case DECREASE_PIN:
-            currentCap--;
-            break;
-        case REJECT_PIN:
-            currentRejected++;
-            break;
+    if ((events == GPIO_IRQ_EDGE_FALL) && (to_ms_since_boot(get_absolute_time()) - timePressed > delayTime)) {
+        switch(gpio) {
+            case INCREASE_PIN:
+                currentCap++;
+                break;
+            case DECREASE_PIN:
+                currentCap--;
+                break;
+            case REJECT_PIN:
+                currentRejected++;
+                break;
+        }
+    } else if (events == GPIO_IRQ_EDGE_RISE) {
+        timePressed = to_ms_since_boot(get_absolute_time());
     }
     return;
 }
 
+void gpio_release_callback(uint gpio, uint32_t events) {
+    timePressed = to_ms_since_boot(get_absolute_time());
+    return;
+}
 
 /*
  * Main funciton to execute when the microcontroller receives power
@@ -73,15 +88,15 @@ int main() {
     add_repeating_timer_ms(ANIMATION_DELAY, screenCallback, NULL, &timer);
 
     // Set up the gpio interupts
+    timePressed = to_ms_since_boot(get_absolute_time());
     if (PULL_UP_PRESENT) {
         gpio_disable_pulls(0);
         gpio_disable_pulls(1);
         gpio_disable_pulls(2);
     }
-    gpio_set_irq_enabled_with_callback(0, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(1, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(2, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-
+    gpio_set_irq_enabled_with_callback(0, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(1, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(2, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
     while(true); // ATTENDANCE COUNTING IS ETERNAL.
     return 0;
 }

@@ -28,13 +28,15 @@ int main() {
 
     uintptr_t flash_end = (uintptr_t) &__flash_binary_end;
     char* string = calloc(128, sizeof(char));
-    sprintf(string, "F start:%d", XIP_BASE);
-    Paint_DrawString_EN(1,1,string,&Font12,WHITE,BLACK);
-    sprintf(string, "P end:%d", flash_end);
-    Paint_DrawString_EN(1,10,string,&Font12,WHITE,BLACK);
-    int writeLoc = flash_end + (4096 - (flash_end % 4096));
+    int writeLoc = (flash_end + (4096 - (flash_end % 4096)) - XIP_BASE);
     sprintf(string, "W loc:%d", writeLoc);
-    Paint_DrawString_EN(1,19,string,&Font12,WHITE,BLACK);
+    Paint_DrawString_EN(1,1,string,&Font12,WHITE,BLACK);
+    char* buffer = calloc(1, FLASH_PAGE_SIZE);
+    sprintf(buffer, "Hello, world!");
+    flash_range_erase(writeLoc, FLASH_SECTOR_SIZE);
+    flash_range_program(writeLoc,buffer,FLASH_PAGE_SIZE);
+    char *p = (char *)XIP_BASE + writeLoc;
+    Paint_DrawString_EN(1,12,p,&Font8,WHITE,BLACK);
     OLED_2in23_draw_bitmap(0,0,&canvas[0],128,32);
     sleep_ms(1000);
 

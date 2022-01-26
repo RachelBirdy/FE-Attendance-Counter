@@ -1,6 +1,7 @@
 #include "OLED_2in23.h"
 #include "GUI_Paint.h"
 #include <strings.h>
+#include <stdlib.h>
 
 const char* TOP_LINE = "Cur. capacity: ";
 const char* BOTTOM_LINE = "Rejected: ";

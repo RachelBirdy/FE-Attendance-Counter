@@ -1,5 +1,8 @@
 #include <stdint.h>
 
+#ifndef INCLUDE_STRUCTS_H
+#define INCLUDE_STRUCTS_H
+
 // Struct for the current status of the program
 struct Status {
     int cap;
@@ -19,3 +22,5 @@ struct Event {
     enum EventType eventType;
     uint64_t timestamp;
 };
+
+#endif

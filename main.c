@@ -9,9 +9,11 @@
 #include "hardware/gpio.h"
 #include "hardware/flash.h"
 
+#define TOTAL_FLASH_SIZE 2097152
+
 // Just an enum for a type of buttonpress
 enum EventType {
-    None = 0,
+    None = 255,
     Enter = 1,
     Leave = 2,
     Reject = 3
@@ -122,7 +124,8 @@ void gpio_callback(uint gpio, uint32_t events) {
                 break;
         }
         buttonPress.timestamp = to_ms_since_boot(get_absolute_time())/1000;
-        rewriteNumbers(canvas, currentCap, currentRejected);
+        writePage(buttonPress);
+        rewriteNumbers(canvas, currentCap, currentPage);
     } else if (events == GPIO_IRQ_EDGE_RISE) {
         timePressed = to_ms_since_boot(get_absolute_time());
     }
@@ -133,9 +136,17 @@ void gpio_callback(uint gpio, uint32_t events) {
  * Routine to find the number of pages that have been written/
  * the number of the next free page.
  */
-int findCurrentPage(int thisPage) {
-    struct Event* thisEvent = readPage(thisPage);
-    return ((*thisEvent).eventType == None) ? thisPage : findCurrentPage(thisPage + 1);
+int findCurrentPage(int start, int end) {
+    int midpoint = (start + end)/2;
+    updateScreen(canvas, start, end);
+    struct Event *thisEvent = readPage(midpoint);
+    if ((start == end) && (*thisEvent).eventType == None) {
+        return midpoint;
+    } else if ((*thisEvent).eventType != None) {
+        return findCurrentPage(midpoint + 1, end);
+    } else {
+        return findCurrentPage(start, midpoint);
+    }
 }
 
 /*
@@ -149,13 +160,26 @@ int main() {
 
     // Initialize variables
     uintptr_t flash_end = (uintptr_t) &__flash_binary_end;
-    writeStartLoc = (flash_end + (4096 - (flash_end % 4096)) - XIP_BASE);
+    writeStartLoc = (flash_end + (256 - (flash_end % 256)) - XIP_BASE);
 
     // Prepare the display canvas to be drawn on
     UWORD Imagesize = ((OLED_2in23_WIDTH%8==0)? (OLED_2in23_WIDTH/8): (OLED_2in23_WIDTH/8+1)) * OLED_2in23_HEIGHT;
     canvas = (UBYTE *) malloc(Imagesize);
     Paint_NewImage(canvas, OLED_2in23_WIDTH, OLED_2in23_HEIGHT, 0, BLACK);
     Paint_SelectImage(canvas);
+
+    int totalPages = (TOTAL_FLASH_SIZE - writeStartLoc)/256;
+    currentPage = findCurrentPage(0, totalPages - 1);
+    for (int i = 0; i < currentPage; i++) {
+        struct Event *thisEvent = readPage(i);
+        if ((*thisEvent).eventType == Enter) {
+            currentCap++;
+        } else if ((*thisEvent).eventType == Leave) {
+            currentCap--;
+        } else if ((*thisEvent).eventType == Reject) {
+            currentRejected++;
+        }
+    }
 
     // Set up the display update callback
     struct repeating_timer timer;

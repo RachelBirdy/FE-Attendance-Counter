@@ -33,10 +33,10 @@ add_subdirectory(lib/Structs)
 add_subdirectory(lib/GPIO_Buttons)
 
 add_executable(main main.c)
-add_executable(wipe_flash wipe_flash.c)
+# add_executable(wipe_flash wipe_flash.c)
 
 pico_add_extra_outputs(main)
-pico_add_extra_outputs(wipe_flash)
+# pico_add_extra_outputs(wipe_flash)
 
 target_link_libraries(main pico_stdlib hardware_spi Fonts ScreenUpdate m hardware_sync Writer Structs GPIO_Buttons)
-target_link_libraries(wipe_flash OLED pico_stdlib hardware_spi GUI Fonts hardware_flash hardware_sync)
+# target_link_libraries(wipe_flash OLED pico_stdlib hardware_spi GUI Fonts hardware_flash hardware_sync)

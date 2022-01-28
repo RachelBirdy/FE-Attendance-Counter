@@ -1,13 +1,10 @@
 #include "pico/stdlib.h"
 #include <string.h>
 #include <stdlib.h>
-// update_screen is a little file I made to control the ui
-// rather than include the kinda lengthy functions in this
-#include "update_screen.h"
-// writer is a little library to make reading from and writing
-// to the flash easier
+#include "structs.h"
 #include "writer.h"
 #include "GPIO_Buttons.h"
+#include "update_screen.h"
 
 // This is the pointer to the canvas that the various ui
 // elements are drawn onto, and is passed into the various
@@ -46,6 +43,7 @@ int main() {
     stdio_init_all();
     DEV_Module_Init();
     OLED_2in23_Init();
+    GPIO_init();
     writer_init(currentStatus);
 
     // Prepare the display canvas to be drawn on
@@ -59,12 +57,6 @@ int main() {
     add_repeating_timer_ms(ANIMATION_DELAY, screenCallback, NULL, &timer);
 
     // Set up the gpio interupts
-    timePressed = to_ms_since_boot(get_absolute_time());
-    if (PULL_UP_PRESENT) {
-        gpio_disable_pulls(0);
-        gpio_disable_pulls(1);
-        gpio_disable_pulls(2);
-    }
     gpio_set_irq_enabled_with_callback(0, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(1, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(2, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true, &gpio_callback);

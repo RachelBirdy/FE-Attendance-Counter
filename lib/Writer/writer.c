@@ -4,6 +4,8 @@
 #include <string.h>
 #include "structs.h"
 
+//The total size of the flash memory, in bytes. For a RasPi Pico,
+// this is 2048K, or 2097152 bytes
 #define TOTAL_FLASH_SIZE 2097152
 
 // This variable is automatically assigned the memory location
@@ -33,6 +35,7 @@ void writePage(struct Event eventToWrite) {
 
 /**
  * Routine to read a page from memory
+ * Parameter pageNumber - the number of the page to read from.
  */
 struct Event *readPage(int pageNumber) {
     int readLoc = XIP_BASE + writeStartLoc + (pageNumber * FLASH_PAGE_SIZE);
@@ -45,6 +48,7 @@ struct Event *readPage(int pageNumber) {
  * the number of the next free page.
  */
 int findCurrentPage(int start, int end) {
+    // This is a simple binary search.
     int midpoint = (start + end)/2;
     struct Event *thisEvent = readPage(midpoint);
     if ((start == end) && (*thisEvent).eventType == None) {
@@ -56,11 +60,28 @@ int findCurrentPage(int start, int end) {
     }
 }
 
+/**
+ * Function to erase the area of the flash memory from the end of the
+ * program onwards.
+ */
+void clear_flash() {
+    flash_range_erase(writeStartLoc, TOTAL_FLASH_SIZE - writeStartLoc);
+}
+
+/**
+ * Initialize variables and load the previous data
+ */
 void writer_init(struct Status *currentStatus) {
     // Initialize variables
     uintptr_t flash_end = (uintptr_t) &__flash_binary_end;
-    writeStartLoc = (flash_end + (256 - (flash_end % 256)) - XIP_BASE);
+
+    // Flash can be written to in 256 byte segments, but can only be erased
+    // in 4096 byte segments. So we make the start of our writing location
+    // line up with a 4096 byte segment
+    writeStartLoc = (flash_end + (4096 - (flash_end % 4096)) - XIP_BASE);
+
     int totalPages = (TOTAL_FLASH_SIZE - writeStartLoc)/256;
+
     currentPage = findCurrentPage(0, totalPages - 1);
     for (int i = 0; i < currentPage; i++) {
         struct Event *thisEvent = readPage(i);
@@ -72,5 +93,6 @@ void writer_init(struct Status *currentStatus) {
             currentStatus->rejected++;
         }
     }
+
     return;
 }

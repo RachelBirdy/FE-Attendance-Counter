@@ -1,6 +1,7 @@
 #include "hardware/gpio.h"
 #include "structs.h"
 #include "DEV_Config.h"
+#include "writer.h"
 
 // Do your buttons have pull up resistors?
 const bool PULL_UP_PRESENT = true;
@@ -44,4 +45,13 @@ void gpio_pressed(uint gpio, uint32_t events, struct Status *currentStatus, UBYT
         timePressed = to_ms_since_boot(get_absolute_time());
     }
     return;
+}
+
+void GPIO_init() {
+    timePressed = to_ms_since_boot(get_absolute_time());
+    if (PULL_UP_PRESENT) {
+        gpio_disable_pulls(0);
+        gpio_disable_pulls(1);
+        gpio_disable_pulls(2);
+    }
 }

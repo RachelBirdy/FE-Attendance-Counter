@@ -7,3 +7,5 @@
 void updateScreen(UBYTE *canvas, int currentCap, int currentRejected);
 
 void rewriteNumbers(UBYTE *canvas, int currentCap, int currentRejected);
+
+void screen_init();

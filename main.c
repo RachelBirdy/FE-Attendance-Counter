@@ -44,6 +44,7 @@ int main() {
     DEV_Module_Init();
     OLED_2in23_Init();
     GPIO_init();
+    screen_init();
     writer_init(currentStatus);
 
     // Prepare the display canvas to be drawn on

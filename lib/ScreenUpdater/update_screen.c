@@ -231,4 +231,5 @@ void screen_init() {
     adc_init();
     adc_gpio_init(29);
     adc_select_input(3);
+    return;
 }

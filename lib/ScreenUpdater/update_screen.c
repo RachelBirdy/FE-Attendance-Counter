@@ -2,6 +2,8 @@
 #include "GUI_Paint.h"
 #include <strings.h>
 #include <stdlib.h>
+#include "hardware/gpio.h"
+#include "hardware/adc.h"
 
 const char* TOP_LINE = "Cur. capacity: ";
 const char* BOTTOM_LINE = "Rejected: ";
@@ -9,7 +11,9 @@ const char* BOTTOM_LINE = "Rejected: ";
 const int TOP_LEN = 15;
 const int BOTTOM_LEN = 10;
 
-int currentRotation = 0;
+int currentRotation;
+const float conversion_factor = 3.3f / (1 << 12);
+float currentVoltage;
 
 // Fully visible helix
 const unsigned char helixTop[28] = {
@@ -194,38 +198,37 @@ void drawAnimation(UBYTE *canvas) {
     }
 }
 
-void updateScreen(UBYTE *canvas, int currentCap, int currentRejected) {
+void rewriteNumbers(UBYTE *canvas, int currentCap, int currentRejected) {
     char capString[10];
     char rejString[10];
     itoa(currentCap, capString, 10);
     itoa(currentRejected, rejString, 10);
     Paint_Clear(BLACK);
+    currentVoltage = (adc_read() * conversion_factor);
+    char voltString[10];
+    sprintf(voltString,"%f",currentVoltage);
 
-    (currentRotation == 7) ? currentRotation = 0 : currentRotation++;
     drawAnimation(canvas);
 
     Paint_DrawString_EN(16, 6, TOP_LINE, &Font8, WHITE, BLACK);
     Paint_DrawString_EN(41, 22, BOTTOM_LINE, &Font8, WHITE, BLACK);
     Paint_DrawString_EN(87, 4, capString, &Font12, WHITE, BLACK);
     Paint_DrawString_EN(87, 20, rejString, &Font12, WHITE, BLACK);
+    Paint_DrawString_EN(100,1,voltString,&Font8, WHITE,BLACK);
     OLED_2in23_draw_bitmap(0,0,&canvas[0],128,32);
     return;
 }
 
-void rewriteNumbers(UBYTE *canvas, int currentCap, int currentRejected) {
-char capString[10];
-    char rejString[10];
-    itoa(currentCap, capString, 10);
-    itoa(currentRejected, rejString, 10);
-    Paint_Clear(BLACK);
-
-    drawAnimation(canvas);
-
-    Paint_DrawString_EN(16, 6, TOP_LINE, &Font8, WHITE, BLACK);
-    Paint_DrawString_EN(41, 22, BOTTOM_LINE, &Font8, WHITE, BLACK);
-    Paint_DrawString_EN(87, 4, capString, &Font12, WHITE, BLACK);
-    Paint_DrawString_EN(87, 20, rejString, &Font12, WHITE, BLACK);
-    OLED_2in23_draw_bitmap(0,0,&canvas[0],128,32);
+void updateScreen(UBYTE *canvas, int currentCap, int currentRejected) {
+    (currentRotation == 7) ? currentRotation = 0 : currentRotation++;
+    rewriteNumbers(canvas, currentCap, currentRejected);
     return;
+}
 
+void screen_init() {
+    currentRotation = 0;
+    stdio_init_all();
+    adc_init();
+    adc_gpio_init(29);
+    adc_select_input(3);
 }
